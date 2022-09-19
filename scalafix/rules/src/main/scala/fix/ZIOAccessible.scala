@@ -14,17 +14,10 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
               if annot.init.tpe.asInstanceOf[Type.Name].value == "Accessible" =>
             val accessibleMethods = findAccessibleMethods(trt)
 
-            val update = updateCompanionPatches(serviceName, accessibleMethods)
+            val update = updateCompanionIfExists(serviceName, accessibleMethods)
             if (update.isEmpty) {
-              val tmpl = template"{ ..${accessibleMethods.map(_._2)} }"
-              Patch.addRight(
-                trt,
-                s"""
-                 |object ${serviceName} $tmpl
-                 """.stripMargin
-              )
-            } else
-              update
+              createCompanion(trt, serviceName, accessibleMethods.map(_._2))
+            } else update
 
         }
         .getOrElse(Patch.empty)
@@ -33,30 +26,47 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
 
   }
 
-  private def updateCompanionPatches(
+  private def createCompanion(
+      trt: Defn.Trait,
+      serviceName: Type.Name,
+      accessibleMethods: List[Defn.Def]
+  ) = {
+    val tmpl = template"{ ..${accessibleMethods} }"
+    Patch.addRight(
+      trt,
+      s"""
+       |object ${serviceName} $tmpl
+       """.stripMargin
+    )
+  }
+
+  private def updateCompanionIfExists(
       serviceName: Type.Name,
       accessibleMethods: List[(Decl.Def, Defn.Def)]
   )(implicit doc: SemanticDocument): Patch = doc.tree.collect {
     case cls @ Defn.Object(_, name, orig) if name.value == serviceName.value =>
       // We have a companion object
-      val companionMethods = orig.stats.collect { case method: Defn.Def =>
-        method
+      val companionMethods = orig.stats.collect {
+        case method @ Defn.Def(mod, name, _, params, Some(returnType), _) =>
+          q"def ${name}(...$params) : $returnType"
       }
+
       val newTemplate = orig.copy(stats =
         orig.stats ++ accessibleMethods
           .collect {
             case (decl, defn)
-                if !companionMethods.exists(_.name.value == decl.name.value) =>
+                if !companionMethods.exists(_.syntax == decl.syntax) =>
               defn
           }
       )
       Patch.replaceTree(cls, cls.copy(templ = newTemplate).toString)
   }.asPatch
 
-
-  /** Find all methods in the trait that are annotated with @Accessible
+  /** Find all methods in the trait
     */
-  private def findAccessibleMethods(trt: Defn.Trait) = trt.collect {
+  private def findAccessibleMethods(
+      trt: Defn.Trait
+  ): List[(Decl.Def, Defn.Def)] = trt.collect {
     case method @ Decl.Def(mod, name, _, params, _) =>
       val service = t"${trt.name}"
       val returnType = method.decltpe match {
@@ -72,7 +82,7 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
       val arguments =
         params.map(pprams => pprams.map(i => Term.Name(i.name.value)))
       (
-        q"def ${method.name}(...$params) : $returnType",
+        q"def ${name}(...$params) : $returnType",
         q"""
           ..$mod def ${method.name}(...$params) : $returnType =
                 ZIO.serviceWithZIO[$service](_.${method.name}(...$arguments))
