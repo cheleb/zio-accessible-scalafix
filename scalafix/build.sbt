@@ -33,12 +33,12 @@ lazy val rules = project.settings(
 
 lazy val input = project.settings(
   (publish / skip) := true,
-  libraryDependencies += "dev.zio" %% "zio" % "2.0.2"
+  libraryDependencies += "dev.zio" %% "zio-streams" % "2.0.2"
 ).dependsOn(accessible)
 
 lazy val output = project.settings(
   (publish / skip) := true,
-   libraryDependencies += "dev.zio" %% "zio" % "2.0.2"
+   libraryDependencies += "dev.zio" %% "zio-streams" % "2.0.2"
 ).dependsOn(accessible)
 
 lazy val tests = project
