@@ -71,6 +71,7 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
       val service = t"${trt.name}"
       val zio = q"ZIO.serviceWithZIO"
       val stream = q"ZStream.serviceWithStream"
+      val sink = q"ZSink.serviceWithSink"
       val (returnType, lookup) = method.decltpe match {
         case t"""Task[$ret]""" =>
           (t"RIO[$service, $ret]", zio)
@@ -94,6 +95,10 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
           (t"ZStream[$service, $err, $ret]", stream)
         case t"""ZStream[$res, $err, $ret]""" =>
           (t"ZStream[$service with $res, $err, $ret]", stream)
+        case t"""ZSink[$res, $err, $in, $l, $ret]""" if res.syntax == "Any" =>
+          (t"ZSink[$service, $err, $in, $l, $ret]", sink)
+        case t"""ZSink[$res, $err, $in, $l, $ret]""" =>
+          (t"ZSink[$service with $res, $err, $in, $l, $ret]", sink)
       }
       
       val arguments =
