@@ -27,7 +27,7 @@ lazy val accessible = project.settings(
 )
 
 lazy val rules = project.settings(
-  moduleName := "named-literal-arguments",
+  moduleName := "zio-module-pattern",
   libraryDependencies += "ch.epfl.scala" %% "scalafix-core" % V.scalafixVersion
 )
 

@@ -10,8 +10,7 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
     doc.tree.collect { case trt @ Defn.Trait(mods, serviceName, _, _, _) =>
       mods
         .collectFirst {
-          case annot: Mod.Annot
-              if annot.init.tpe.asInstanceOf[Type.Name].value == "Accessible" =>
+          case Mod.Annot(Init(Type.Name(name), _, _)) if name == "Accessible" =>
             val accessibleMethods = findAccessibleMethods(trt)
 
             val update = updateCompanionIfExists(serviceName, accessibleMethods)
