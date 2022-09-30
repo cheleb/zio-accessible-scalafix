@@ -12,7 +12,10 @@ inThisBuild(
         url("https://github.com/cheleb")
       )
     ),
-    scalaVersion := V.scala213,
+    sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
+    scalaVersion := V.scala212,
+    crossScalaVersions := List(V.scala213, V.scala212),
     semanticdbEnabled := true,
     semanticdbIncludeInJar := true,
     semanticdbVersion := scalafixSemanticdb.revision,
