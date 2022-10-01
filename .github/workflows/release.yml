@@ -1,7 +1,7 @@
 name: Release
 on:
   push:
-    branches: [main]
+    branches: [master]
     tags: ["*"]
 jobs:
   publish:
@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v13
-      - uses: olafurpg/setup-gpg@v3
+#      - uses: olafurpg/setup-gpg@v3
       - run: git fetch --unshallow
       - name: Publish ${{ github.ref }}
         working-directory: ./scalafix
