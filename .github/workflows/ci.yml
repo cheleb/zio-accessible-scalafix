@@ -3,9 +3,16 @@ name: Scala CI
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'website/**'
   pull_request:
     branches: [ master ]
-
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'website/**'
 jobs:
   build:
 

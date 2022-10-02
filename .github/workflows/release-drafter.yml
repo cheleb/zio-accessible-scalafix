@@ -4,7 +4,10 @@ on:
   push:
     branches:
       - master
-
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'website/**'
 jobs:
   update_release_draft:
     runs-on: ubuntu-latest
