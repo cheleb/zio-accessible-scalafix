@@ -11,9 +11,11 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
       mods
         .collectFirst {
           case Mod.Annot(Init(Type.Name(name), _, _)) if name == "Accessible" =>
+
             val accessibleMethods = findAccessibleMethods(trt)
 
             val update = updateCompanionIfExists(serviceName, accessibleMethods)
+
             if (update.isEmpty) {
               createCompanion(trt, serviceName, accessibleMethods.map(_._2))
             } else update
@@ -43,11 +45,11 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
       serviceName: Type.Name,
       accessibleMethods: List[(Decl.Def, Defn.Def)]
   )(implicit doc: SemanticDocument): Patch = doc.tree.collect {
-    case cls @ Defn.Object(_, name, orig) if name.value == serviceName.value =>
+    case obj @ Defn.Object(_, name, orig) if name.value == serviceName.value =>
       // We have a companion object
       val companionMethods = orig.stats.collect {
-        case method @ Defn.Def(mod, name, _, params, Some(returnType), _) =>
-          q"def ${name}(...$params) : $returnType"
+        case method @ Defn.Def(mods, name, _, params, Some(returnType), _) =>
+          q"..$mods def ${name}(...$params) : $returnType"
       }
 
       val newTemplate = orig.copy(stats =
@@ -58,15 +60,22 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
               defn
           }
       )
-      Patch.replaceTree(cls, cls.copy(templ = newTemplate).toString)
+      Patch.replaceTree(obj, obj.copy(templ = newTemplate).toString)
   }.asPatch
+
+
+  private def public(mods: List[Mod]): Boolean = mods.forall {
+    case Mod.Private(_) => false
+    case Mod.Protected(_) => false
+    case _ => true
+  }
 
   /** Find all methods in the trait
     */
   private def findAccessibleMethods(
       trt: Defn.Trait
   ): List[(Decl.Def, Defn.Def)] = trt.collect {
-    case method @ Decl.Def(mod, name, _, params, _) =>
+    case method @ Decl.Def(mods, name, _, params, _) if public(mods) =>
       val service = t"${trt.name}"
       val zio = q"ZIO.serviceWithZIO"
       val stream = q"ZStream.serviceWithStream"
@@ -104,9 +113,9 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
         params.map(pprams => pprams.map(i => Term.Name(i.name.value)))
 
       (
-        q"def ${name}(...$params) : $returnType",
+        q"..$mods def ${name}(...$params) : $returnType",
         q"""
-          ..$mod def ${method.name}(...$params) : $returnType =
+          ..$mods def ${method.name}(...$params) : $returnType =
                 $lookup[$service](_.${method.name}(...$arguments))
           """
       )
