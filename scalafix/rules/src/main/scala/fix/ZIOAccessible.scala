@@ -3,9 +3,9 @@ package fix
 import scalafix.v1._
 import scala.meta._
 
-class ZIOAccessible extends SemanticRule("ZIOAccessible") {
+class ZIOAccessible extends SyntacticRule("ZIOAccessible") {
 
-  override def fix(implicit doc: SemanticDocument): Patch = {
+  override def fix(implicit doc: SyntacticDocument): Patch = {
 
     doc.tree.collect { case trt @ Defn.Trait(mods, serviceName, _, _, _) =>
       mods
@@ -37,14 +37,14 @@ class ZIOAccessible extends SemanticRule("ZIOAccessible") {
       trt,
       s"""
        |object ${serviceName} $tmpl
-       """.stripMargin
+       |""".stripMargin
     )
   }
 
   private def updateCompanionIfExists(
       serviceName: Type.Name,
       accessibleMethods: List[(Decl.Def, Defn.Def)]
-  )(implicit doc: SemanticDocument): Patch = doc.tree.collect {
+  )(implicit doc: SyntacticDocument): Patch = doc.tree.collect {
     case obj @ Defn.Object(_, name, orig) if name.value == serviceName.value =>
       // We have a companion object
       val companionMethods = orig.stats.collect {

@@ -20,4 +20,17 @@ trait NoCompanion {
   protected def protectedSink: ZSink[Any, Nothing, Int, Nothing, Int]
   private def privateSink: ZSink[Any, Nothing, Int, Nothing, Int] = ZSink.sum
 }
-
+case class NoCompanionLive(deps: String) extends NoCompanion {
+  def testTask(i: Int): Task[Int] = ZIO.succeed(i)
+  def testZIO(i: Int): ZIO[Any, Throwable, Int] = ZIO.succeed(i)
+  def testZIO2(i: Int): ZIO[Any, Throwable, Int] = ZIO.succeed(i)
+  def testIO(i: Int): IO[Throwable, Int] = ZIO.succeed(i)
+  def testUIO(i: Int): UIO[Int] = ZIO.succeed(i)
+  def testURIO(i: Int): URIO[Scope, Int] = ZIO.succeed(i)
+  def testWithScope(i: Int): ZIO[Scope, Throwable, Int] = ZIO.succeed(i)
+  def testRIOWithScope(i: Int): RIO[Scope, Int] = ZIO.succeed(i)
+  def stream: ZStream[Any, Nothing, Int] = ZStream(1, 2, 3)
+  def sink: ZSink[Any, Nothing, Int, Nothing, Int] = ZSink.sum
+  protected def protectedSink: ZSink[Any, Nothing, Int, Nothing, Int] = ZSink.sum
+  private def privateSink: ZSink[Any, Nothing, Int, Nothing, Int] = ZSink.sum
+}
