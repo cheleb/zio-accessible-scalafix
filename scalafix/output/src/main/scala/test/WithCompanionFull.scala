@@ -9,6 +9,13 @@ trait WithCompanionFull {
   def test3(i: Int): ZIO[Any, Throwable, Int]
   def testTask(i: Int): Task[Int]
 }
+class WithCompanionFullImpl extends WithCompanionFull {
+  def testIO(i: Int): IO[Throwable, Int] = ???
+  def test2(i: Int): ZIO[Any, Throwable, Int] = ???
+  def test3(i: Int): ZIO[Any, Throwable, Int] = ???
+  def testTask(i: Int): Task[Int] = ???
+}
+
 
 object WithCompanionFull {
   val zozo = "bo"
@@ -18,4 +25,3 @@ object WithCompanionFull {
   def test3(i: Int): ZIO[WithCompanionFull, Throwable, Int] = ZIO.serviceWithZIO[WithCompanionFull](_.test3(i))
   def testTask(i: Int): RIO[WithCompanionFull, Int] = ZIO.serviceWithZIO[WithCompanionFull](_.testTask(i))
 }
-
