@@ -18,6 +18,11 @@ trait NoCompanion {
   def stream: ZStream[Any, Nothing, Int]
   def sink: ZSink[Any, Nothing, Int, Nothing, Int]
   def testGen[A](i: A): Task[A]
+  def createReaderGroup(
+    readerGroupName: String,
+    builder: Int,
+    streamNames: String*
+  ): Task[Boolean]
 }
 class NoCompanionImpl extends NoCompanion {
   def testTask(i: Int): Task[Int] = ???
@@ -31,5 +36,5 @@ class NoCompanionImpl extends NoCompanion {
   def stream: ZStream[Any, Nothing, Int] = ???
   def sink: ZSink[Any, Nothing, Int, Nothing, Int] = ???
   def testGen[A](i: A): Task[A] = ???
-
+  def createReaderGroup(readerGroupName: String, builder: Int, streamNames: String*): Task[Boolean] = ???
 }

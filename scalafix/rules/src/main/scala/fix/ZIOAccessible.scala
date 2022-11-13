@@ -2,7 +2,6 @@ package fix
 
 import scalafix.v1._
 import scala.meta._
-
 class ZIOAccessible extends SyntacticRule("ZIOAccessible") {
 
   case class AccessibleMethod(
@@ -99,7 +98,8 @@ class ZIOAccessible extends SyntacticRule("ZIOAccessible") {
       trt: Defn.Trait,
       accessibleMethods: List[AccessibleMethod]
   )(implicit doc: SyntacticDocument): Patch = doc.tree.collect {
-    case impl @ Defn.Class(mods, name, _, _, orig) if impl.templ.inits.exists(_.tpe.syntax == trt.name.syntax) =>
+    case impl @ Defn.Class(mods, name, _, _, orig) if impl.templ.inits.exists(_.tpe.structure == trt.name.structure) =>
+      // We have an implementation class
       val serviceImplMethods = impl.templ.stats.collect {
         case method @ Defn.Def(mods, name, tparams, params, Some(returnType), _) =>
           q"..$mods def ${name}[..$tparams](...$params) : $returnType"
@@ -108,7 +108,7 @@ class ZIOAccessible extends SyntacticRule("ZIOAccessible") {
       val newTemplate = orig.copy(stats =
         orig.stats ++ accessibleMethods
           .collect {
-            case AccessibleMethod(decl, defn, _, _) if !serviceImplMethods.exists(_.syntax == decl.syntax) =>
+            case AccessibleMethod(decl, defn, _, _) if !serviceImplMethods.exists(_.structure == decl.structure) =>
               defn
           }
       )
@@ -161,7 +161,13 @@ class ZIOAccessible extends SyntacticRule("ZIOAccessible") {
       }
       
       val arguments =
-        params.map(pprams => pprams.map(i => Term.Name(i.name.value)))
+        params
+        .map(pprams => pprams.map{
+          case Term.Param(_, name, Some(Type.Repeated(t)), _) => 
+              Term.Repeated(Term.Name(name.value))
+           case Term.Param(_, name, _, _) => 
+              Term.Name(name.value)
+       })
 
       AccessibleMethod( method,
         q"""

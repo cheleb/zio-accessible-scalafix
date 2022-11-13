@@ -15,6 +15,11 @@ trait NoCompanion {
   def stream: ZStream[Any, Nothing, Int]
   def sink: ZSink[Any, Nothing, Int, Nothing, Int]
   def testGen[A](i: A): Task[A]
+  def createReaderGroup(
+    readerGroupName: String,
+    builder: Int,
+    streamNames: String*
+  ): Task[Boolean]
 }
 object NoCompanion {
   def testTask(i: Int): RIO[NoCompanion, Int] = ZIO.serviceWithZIO[NoCompanion](_.testTask(i))
@@ -28,6 +33,7 @@ object NoCompanion {
   def stream: ZStream[NoCompanion, Nothing, Int] = ZStream.serviceWithStream[NoCompanion](_.stream)
   def sink: ZSink[NoCompanion, Nothing, Int, Nothing, Int] = ZSink.serviceWithSink[NoCompanion](_.sink)
   def testGen[A](i: A): RIO[NoCompanion, A] = ZIO.serviceWithZIO[NoCompanion](_.testGen(i))
+  def createReaderGroup(readerGroupName: String, builder: Int, streamNames: String*): RIO[NoCompanion, Boolean] = ZIO.serviceWithZIO[NoCompanion](_.createReaderGroup(readerGroupName, builder, streamNames: _*))
 }
 
 class NoCompanionImpl extends NoCompanion {
@@ -42,4 +48,5 @@ class NoCompanionImpl extends NoCompanion {
   def stream: ZStream[Any, Nothing, Int] = ???
   def sink: ZSink[Any, Nothing, Int, Nothing, Int] = ???
   def testGen[A](i: A): Task[A] = ???
+  def createReaderGroup(readerGroupName: String, builder: Int, streamNames: String*): Task[Boolean] = ???
 }

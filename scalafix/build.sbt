@@ -1,3 +1,4 @@
+val scala3Version = "3.2.1"
 lazy val V = _root_.scalafix.sbt.BuildInfo
 inThisBuild(
   List(
@@ -17,7 +18,7 @@ inThisBuild(
     pgpPublicRing := file("/tmp/public.asc"),
     pgpSecretRing := file("/tmp/secret.asc"),
     pgpPassphrase := sys.env.get("PGP_PASSWORD").map(_.toArray),
-    scalaVersion := V.scala212,
+    scalaVersion := V.scala213,
     crossScalaVersions := List(V.scala213, V.scala212),
     semanticdbEnabled := true,
     semanticdbIncludeInJar := true,
