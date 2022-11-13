@@ -5,19 +5,17 @@ import scala.meta._
 
 object ZIOModulePattern {
 
-  def companionPatch(
+  def patches(
       trt: Defn.Trait,
-      serviceName: Type.Name,
-      accessibleMethods: List[AccessibleMethod]
-  )(implicit doc: SyntacticDocument) = 
-    ZIOCompanion.companionPatch(trt, serviceName, accessibleMethods)
-
-  def serviceImplPatch(
-      trt: Defn.Trait,
-      serviceName: Type.Name,
-      accessibleMethods: List[AccessibleMethod]
-  )(implicit doc: SyntacticDocument) = 
-    ZIOServiceImpl.serviceImplPatch(trt, serviceName, accessibleMethods)
+      serviceName: Type.Name
+  )(implicit doc: SyntacticDocument) = {
+    val accessibleMethods = findAccessibleMethods(trt)
+    if (accessibleMethods.isEmpty)
+      Patch.empty
+    else
+      ZIOServiceImpl.serviceImplPatch(trt, serviceName, accessibleMethods) +
+        ZIOCompanion.companionPatch(trt, serviceName, accessibleMethods)
+  }
 
   def findAccessibleMethods(
       trt: Defn.Trait

@@ -3,7 +3,6 @@ package fix
 import scalafix.v1._
 import scala.meta._
 
-
 object ZIOCompanion {
 
   def companionPatch(
@@ -32,17 +31,19 @@ object ZIOCompanion {
       obj: Defn.Object,
       accessibleMethods: List[AccessibleMethod]
   )(implicit doc: SyntacticDocument): Patch = {
-    val companionMethods = obj.templ.stats.collect {
-      case method @ Defn.Def(
-            mods,
-            name,
-            tparams,
-            params,
-            Some(returnType),
-            _
-          ) =>
-        q"..$mods def ${name}[..$tparams](...$params) : $returnType"
-    }.map(_.structure)
+    val companionMethods = obj.templ.stats
+      .collect {
+        case method @ Defn.Def(
+              mods,
+              name,
+              tparams,
+              params,
+              Some(returnType),
+              _
+            ) =>
+          q"..$mods def ${name}[..$tparams](...$params) : $returnType"
+      }
+      .map(_.structure)
 
     val newMethods = accessibleMethods.filterNot(m =>
       companionMethods.contains(m.companionMethodDef.structure)
@@ -69,6 +70,5 @@ object ZIOCompanion {
        |""".stripMargin
     )
   }
-
 
 }

@@ -23,19 +23,23 @@ object ZIOServiceImpl {
       impl: Defn.Class,
       accessibleMethods: List[AccessibleMethod]
   ) = {
-    val serviceImplMethods = impl.templ.stats.collect {
-      case Defn.Def(
-            mods,
-            name,
-            tparams,
-            params,
-            Some(returnType),
-            _
-          ) =>
-        q"..$mods def ${name}[..$tparams](...$params) : $returnType"
-    }.map(_.structure)
+    val serviceImplMethods = impl.templ.stats
+      .collect {
+        case Defn.Def(
+              mods,
+              name,
+              tparams,
+              params,
+              Some(returnType),
+              _
+            ) =>
+          q"..$mods def ${name}[..$tparams](...$params) : $returnType"
+      }
+      .map(_.structure)
     val newMethods =
-      accessibleMethods.filterNot(m => serviceImplMethods.contains(m.methodDef.structure))
+      accessibleMethods.filterNot(m =>
+        serviceImplMethods.contains(m.methodDef.structure)
+      )
     if (newMethods.isEmpty) Patch.empty
     else {
       val newTemplate = impl.templ.copy(stats =

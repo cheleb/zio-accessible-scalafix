@@ -4,16 +4,14 @@ import scalafix.v1._
 import scala.meta._
 
 case class AccessibleMethod(
-  methodDef: Decl.Def,
-  methodImpl: Defn.Def,
-  companionMethodDef: Decl.Def,
-  companionMethodImpl: Defn.Def
+    methodDef: Decl.Def,
+    methodImpl: Defn.Def,
+    companionMethodDef: Decl.Def,
+    companionMethodImpl: Defn.Def
 )
 
 import ZIOModulePattern._
 class ZIOAccessible extends SyntacticRule("ZIOAccessible") {
-
-
 
   override def fix(implicit doc: SyntacticDocument): Patch = {
 
@@ -21,15 +19,7 @@ class ZIOAccessible extends SyntacticRule("ZIOAccessible") {
       mods
         .collectFirst {
           case Mod.Annot(Init(Type.Name(name), _, _)) if name == "Accessible" =>
-
-            val accessibleMethods = findAccessibleMethods(trt)
-
-
-            serviceImplPatch(trt, serviceName, accessibleMethods) + companionPatch(
-              trt,
-              serviceName,
-              accessibleMethods
-            )
+            patches(trt, serviceName)
 
         }
         .getOrElse(Patch.empty)
@@ -37,8 +27,5 @@ class ZIOAccessible extends SyntacticRule("ZIOAccessible") {
     }.asPatch
 
   }
-
-  
-
 
 }
