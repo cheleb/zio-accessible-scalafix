@@ -25,6 +25,7 @@ object ZIOModulePattern {
       val service = t"${trt.name}"
       val zio = q"ZIO.serviceWithZIO"
       val stream = q"ZStream.serviceWithStream"
+      val pipeline = q"ZPipeline.serviceWithPipeline"
       val sink = q"ZSink.serviceWithSink"
       val (returnType, lookup) = method.decltpe match {
         case t"""Task[$ret]""" =>
@@ -45,14 +46,20 @@ object ZIOModulePattern {
           (t"RIO[$service, $ret]", zio)
         case t"""RIO[$res, $ret]""" =>
           (t"RIO[$service with $res, $ret]", zio)
+        case t"""Stream[$err, $ret]""" =>
+          (t"ZStream[$service, $err, $ret]", stream)
         case t"""ZStream[$res, $err, $ret]""" if res.syntax == "Any" =>
           (t"ZStream[$service, $err, $ret]", stream)
         case t"""ZStream[$res, $err, $ret]""" =>
           (t"ZStream[$service with $res, $err, $ret]", stream)
+        case t"""ZPipeline[$res, $err, $in, $out]""" if res.syntax == "Any" =>
+          (t"ZPipeline[$service, $err, $in, $out]", pipeline)
         case t"""ZSink[$res, $err, $in, $l, $ret]""" if res.syntax == "Any" =>
           (t"ZSink[$service, $err, $in, $l, $ret]", sink)
         case t"""ZSink[$res, $err, $in, $l, $ret]""" =>
           (t"ZSink[$service with $res, $err, $in, $l, $ret]", sink)
+        case t"""Sink[$err, $in, $l, $ret]""" =>
+          (t"ZSink[$service, $err, $in, $l, $ret]", sink)
       }
 
       val arguments =
