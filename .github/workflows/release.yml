@@ -1,15 +1,16 @@
 name: Release
 on:
   push:
-#    branches: [master]
     tags: ["v*"]
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: olafurpg/setup-scala@v13
-#      - uses: olafurpg/setup-gpg@v3
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
       - run: git fetch --unshallow
       - name: Publish ${{ github.ref }}
         working-directory: ./scalafix
