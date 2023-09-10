@@ -20,8 +20,13 @@ object ZIOModulePattern {
   def findAccessibleMethods(
       trt: Defn.Trait
   ): List[AccessibleMethod] = trt.collect {
-    case method @ Decl.Def(mods, name, tparams, params, mtype)
-        if public(mods) =>
+    case method @ Decl.Def(
+          mods,
+          name,
+          tparams,
+          params,
+          mtype @ Type.Apply(rtype, rtparams)
+        ) if public(mods) =>
       val service = t"${trt.name}"
       val zio = q"ZIO.serviceWithZIO"
       val stream = q"ZStream.serviceWithStream"
@@ -74,7 +79,21 @@ object ZIOModulePattern {
           )
 
       AccessibleMethod(
-        method,
+//        method,
+        Decl.Def(
+          List(),
+          method.name,
+          if (method.paramClauseGroups.isEmpty)
+            List(Member.ParamClauseGroup(Type.ParamClause(List()), List()))
+          else
+            method.paramClauseGroups,
+          Type.Apply(
+            rtype,
+            Type.ArgClause(
+              rtparams.map(_.syntax).map(Type.Name(_))
+            )
+          )
+        ),
         q"""
           ..$mods def ${method.name}[..$tparams](...$params) : $mtype = ???
           """,

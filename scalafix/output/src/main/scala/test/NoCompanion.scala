@@ -50,7 +50,7 @@ class NoCompanionImpl extends NoCompanion {
   def testWithScope(i: Int): ZIO[Scope, Throwable, Int] = ???
   def testRIOWithScope(i: Int): RIO[Scope, Int] = ???
   def stream: ZStream[Any, Nothing, Int] = ???
-  def writeFlow[A](streamName: String): ZPipeline[Any,Throwable, A, A] = ???
+  def writeFlow[A](streamName: String): ZPipeline[Any, Throwable, A, A] = ???
   def zsink: ZSink[Any, Nothing, Int, Nothing, Int] = ???
   def sink: Sink[Nothing, Int, Nothing, Int] = ???
   def testGen[A](i: A): Task[A] = ???

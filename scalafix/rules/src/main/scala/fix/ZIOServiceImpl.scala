@@ -36,10 +36,12 @@ object ZIOServiceImpl {
           q"..$mods def ${name}[..$tparams](...$params) : $returnType"
       }
       .map(_.structure)
+    println(serviceImplMethods)
     val newMethods =
-      accessibleMethods.filterNot(m =>
+      accessibleMethods.filterNot { m =>
+        println(m.methodDef.structure)
         serviceImplMethods.contains(m.methodDef.structure)
-      )
+      }
     if (newMethods.isEmpty) Patch.empty
     else {
       val newTemplate = impl.templ.copy(stats =
